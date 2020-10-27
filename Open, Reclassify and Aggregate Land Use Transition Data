@@ -1,0 +1,214 @@
+######################################### Handling MapBiomas Land Use Transition Data from Collection 5 ############################################ 
+#Packages
+library(raster)
+library(rgdal)
+library(spdep)
+library(maptools)
+library(ggplot2)
+library(rgeos)
+library(sp)
+library(sf)
+library(dplyr)
+library(geosphere)
+
+####### Clearing my memory #######
+
+rm(list = ls())
+
+.rs.restartR()
+
+######################################## Openning Data #########################################
+# I am using the 30 m resolution data which is downloaded from Google Earth Engine in 4 files per year
+
+#set directory
+setwd("C:/Users/XXXXXX")
+
+#List of the years I will be using
+ano<-list(2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018)
+
+#Opening and aggregating the yearly data on a single raster
+for (year in ano){
+  year2<-year+1
+  arquivo1<- sprintf('mapbiomas-brazil-collection-50-matogrosso-%s_%s-0000000000-0000000000.tif', year,year2)
+  arquivo2<- sprintf('mapbiomas-brazil-collection-50-matogrosso-%s_%s-0000000000-0000031744.tif', year,year2)
+  arquivo3<- sprintf('mapbiomas-brazil-collection-50-matogrosso-%s_%s-0000031744-0000000000.tif', year,year2)
+  arquivo4<- sprintf('mapbiomas-brazil-collection-50-matogrosso-%s_%s-0000031744-0000031744.tif', year,year2)
+  imported_raster1<-raster(arquivo1)
+  imported_raster2<-raster(arquivo2)
+  imported_raster3<-raster(arquivo3)
+  imported_raster4<-raster(arquivo4)
+  mt<-raster::merge(imported_raster1,imported_raster2,imported_raster3,imported_raster4)
+  remove(arquivo1,arquivo2,arquivo3,arquivo4,imported_raster1,imported_raster2,imported_raster3,imported_raster4)
+  a<-projectRaster(mt, crs = "+init=epsg:5641")
+  mt <- ratify(a)
+  writeRaster(mt,paste(sprintf('mt-tde-%s.tif', year)))
+}
+
+
+######################################## Looping to reclassify data #########################################
+
+# The transition classification categories that I considered are explained in the file "LAND TRANSITION CLASSIFICATION"
+
+setwd("C:/Users/XXXXX")
+ano<-list(2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018)
+
+####### F2P 
+
+for (year in ano){
+  arquivo<- sprintf('mt-tde-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  f <- c(0,114,0,114,115,1,115,214,0,214,215,1,215,314,0,314,315,1,315,414,0,414,415,1,415,514,0,514,515,1,515,4000,0)
+  f_mat <- matrix(f, ncol=3, byrow=TRUE)
+  reclass <- reclassify(imported_raster, f_mat)
+  remove(imported_raster,arquivo)
+  writeRaster(reclass,paste(sprintf('t-f2p-%s.tif', year)))
+}
+
+
+####### P2C 
+for (year in ano){
+  arquivo<- sprintf('mt-tde-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  f <- c(0,1517,0,1517,1520,1,1520,4000,0)
+  f_mat <- matrix(f, ncol=3, byrow=TRUE)
+  reclass <- reclassify(imported_raster, f_mat)
+  remove(imported_raster,arquivo)
+  writeRaster(reclass,paste(sprintf('t-p2c-%s.tif', year)))
+}
+
+
+####### f2C 
+for (year in ano){
+  arquivo<- sprintf('mt-tde-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  f <- c(0,117,0,117,120,1,120,217,0,217,220,1,220,317,0,317,320,1,320,417,0,417,420,1,420,517,0,517,520,1,520,4000,0)
+  f_mat <- matrix(f, ncol=3, byrow=TRUE)
+  reclass <- reclassify(imported_raster, f_mat)
+  remove(imported_raster,arquivo)
+  writeRaster(reclass,paste(sprintf('t-f2c-%s.tif', year)))
+}
+
+############################# Aggregating the 30m data in 300 m resolution################################
+
+#Set directory where the files should be saved
+setwd("C:/Users/XXXXX/Transition_Data_300m")
+
+ano<-list(2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018)
+
+for (year in ano){
+  arquivo<- sprintf('t-fcl-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  imported_rastera<-aggregate(imported_raster,fact=10,fun=mean)
+  assign(sprintf('fcl-%s', year),imported_rastera)
+}
+fcl<-stack(`fcl-2000`,`fcl-2001`,`fcl-2002`,`fcl-2003`,`fcl-2004`,`fcl-2005`,`fcl-2006`,`fcl-2007`,`fcl-2008`,`fcl-2009`,`fcl-2010`,`fcl-2011`)
+save(fcl,file="fcl.RData")
+
+
+for (year in ano){
+  arquivo<- sprintf('t-f2c-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  imported_rastera<-aggregate(imported_raster,fact=10,fun=mean)
+  assign(sprintf('f2c-%s', year),imported_rastera)
+}
+f2c<-stack(`f2c-2000`,`f2c-2001`,`f2c-2002`,`f2c-2003`,`f2c-2004`,`f2c-2005`,`f2c-2006`,`f2c-2007`,`f2c-2008`,`f2c-2009`,`f2c-2010`,`f2c-2011`)
+save(f2c,file="f2c.RData")
+#remove(`f2c-2000`,`f2c-2001`,`f2c-2002`,`f2c-2003`,`f2c-2004`,`f2c-2005`,`f2c-2006`,`f2c-2007`,`f2c-2008`,`f2c-2009`,`f2c-2010`,`f2c-2011`)
+
+for (year in ano){
+  arquivo<- sprintf('t-p2c-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  imported_rastera<-aggregate(imported_raster,fact=10,fun=mean)
+  assign(sprintf('p2c-%s', year),imported_rastera)
+}
+p2c<-stack(`p2c-2000`,`p2c-2001`,`p2c-2002`,`p2c-2003`,`p2c-2004`,`p2c-2005`,`p2c-2006`,`p2c-2007`,`p2c-2008`,`p2c-2009`,`p2c-2010`,`p2c-2011`)
+save(p2c,file="p2c.RData")
+#remove(`p2c-2000`,`p2c-2001`,`p2c-2002`,`p2c-2003`,`p2c-2004`,`p2c-2005`,`p2c-2006`,`p2c-2007`,`p2c-2008`,`p2c-2009`,`p2c-2010`,`p2c-2011`)
+
+
+for (year in ano){
+  arquivo<- sprintf('t-f2p-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  imported_rastera<-aggregate(imported_raster,fact=100,fun=mean)
+  assign(sprintf('f2p-%s', year),imported_rastera)
+}
+
+
+f2p<-stack(`f2p-2000`,`f2p-2001`,`f2p-2002`,`f2p-2003`,`f2p-2004`,`f2p-2005`,`f2p-2006`,`f2p-2007`,`f2p-2008`,`f2p-2009`,`f2p-2010`,`f2p-2011`
+save(f2p,file="f2p.RData")
+remove(`f2p-2000`,`f2p-2001`,`f2p-2002`,`f2p-2003`,`f2p-2004`,`f2p-2005`,`f2p-2006`,`f2p-2007`,`f2p-2008`,`f2p-2009`,`f2p-2010`,`f2p-2011`)
+
+
+### Transforming the Raster Stacks in DataFrames ###
+
+setwd("C:/Users/Anna Costola Pede/Desktop/Dissertacao/Transicoes_30m")
+
+#Stacking the 4 different classifications in a single dataframe
+camadas<-stack(fcl,f2c,p2c,f2p)
+writeRaster(camadas,'camadas.tif')
+
+library(sf)
+library(stars)
+camadast<-read_stars('camadas.tif')
+teste3<-st_as_sf(camadast,as_points=TRUE,merge=FALSE)
+id<-rownames(teste3)
+Transicoes_Uso_solo<-cbind(id=id,teste3)
+remove(teste3)
+
+
+###### Arrumando os nomes ######
+
+names(Transicoes_Uso_solo)[2]<-"fcl2000"
+names(Transicoes_Uso_solo)[3]<-"fcl2001"
+names(Transicoes_Uso_solo)[4]<-"fcl2002"
+names(Transicoes_Uso_solo)[5]<-"fcl2003"
+names(Transicoes_Uso_solo)[6]<-"fcl2004"
+names(Transicoes_Uso_solo)[7]<-"fcl2005"
+names(Transicoes_Uso_solo)[8]<-"fcl2006"
+names(Transicoes_Uso_solo)[9]<-"fcl2007"
+names(Transicoes_Uso_solo)[10]<-"fcl2008"
+names(Transicoes_Uso_solo)[11]<-"fcl2009"
+names(Transicoes_Uso_solo)[12]<-"fcl2010"
+names(Transicoes_Uso_solo)[13]<-"fcl2011"
+
+names(Transicoes_Uso_solo)[14]<-"f2c2000"
+names(Transicoes_Uso_solo)[15]<-"f2c2001"
+names(Transicoes_Uso_solo)[16]<-"f2c2002"
+names(Transicoes_Uso_solo)[17]<-"f2c2003"
+names(Transicoes_Uso_solo)[18]<-"f2c2004"
+names(Transicoes_Uso_solo)[19]<-"f2c2005"
+names(Transicoes_Uso_solo)[20]<-"f2c2006"
+names(Transicoes_Uso_solo)[21]<-"f2c2007"
+names(Transicoes_Uso_solo)[22]<-"f2c2008"
+names(Transicoes_Uso_solo)[23]<-"f2c2009"
+names(Transicoes_Uso_solo)[24]<-"f2c2010"
+names(Transicoes_Uso_solo)[25]<-"f2c2011"
+
+names(Transicoes_Uso_solo)[26]<-"p2c2000"
+names(Transicoes_Uso_solo)[27]<-"p2c2001"
+names(Transicoes_Uso_solo)[28]<-"p2c2002"
+names(Transicoes_Uso_solo)[29]<-"p2c2003"
+names(Transicoes_Uso_solo)[30]<-"p2c2004"
+names(Transicoes_Uso_solo)[31]<-"p2c2005"
+names(Transicoes_Uso_solo)[32]<-"p2c2006"
+names(Transicoes_Uso_solo)[33]<-"p2c2007"
+names(Transicoes_Uso_solo)[34]<-"p2c2008"
+names(Transicoes_Uso_solo)[35]<-"p2c2009"
+names(Transicoes_Uso_solo)[36]<-"p2c2010"
+names(Transicoes_Uso_solo)[37]<-"p2c2011"
+
+names(Transicoes_Uso_solo)[38]<-"f2p2000"
+names(Transicoes_Uso_solo)[39]<-"f2p2001"
+names(Transicoes_Uso_solo)[40]<-"f2p2002"
+names(Transicoes_Uso_solo)[41]<-"f2p2003"
+names(Transicoes_Uso_solo)[42]<-"f2p2004"
+names(Transicoes_Uso_solo)[43]<-"f2p2005"
+names(Transicoes_Uso_solo)[44]<-"f2p2006"
+names(Transicoes_Uso_solo)[45]<-"f2p2007"
+names(Transicoes_Uso_solo)[46]<-"f2p2008"
+names(Transicoes_Uso_solo)[47]<-"f2p2009"
+names(Transicoes_Uso_solo)[48]<-"f2p2010"
+names(Transicoes_Uso_solo)[49]<-"f2p2011"
+
+save(Transicoes_Uso_solo,file="Transicoes_300M.RData")
+
