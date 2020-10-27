@@ -1,0 +1,7 @@
+# In this repository I show how to open, aggregate and conduct analysis on Brazil's land use data from MapBiomas in R.
+
+# Data Source: MapBiomas 
+
+# About MapBiomas:https://mapbiomas.org/en/about-us
+
+# Data was downloaded on Google Earth Engine. Here is a tutorial on how to download the data: https://mapbiomas.org/en/google-earth-engine
