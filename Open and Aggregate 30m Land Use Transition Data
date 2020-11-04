@@ -1,0 +1,50 @@
+######################################### Handling MapBiomas Land Use Transition Data from Collection 5 ############################################ 
+#Packages
+library(raster)
+library(rgdal)
+library(spdep)
+library(maptools)
+library(ggplot2)
+library(rgeos)
+library(sp)
+library(sf)
+library(dplyr)
+library(geosphere)
+
+####### Clearing my memory #######
+
+rm(list = ls())
+
+.rs.restartR()
+
+######################################## Openning Data #########################################
+# I am using the 30 m resolution data which is downloaded from Google Earth Engine in 4 files per year
+
+#set directory
+setwd("C:/Users/XXXXXX")
+
+#List of the years I will be using
+ano<-list(2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018)
+
+#I will be analysing only the Mato Grosso state. So I will use a state raster to crop the united data and make sure I am only considering observations inside the state
+load("XXXX/mato_grosso.RData")
+
+#Opening and aggregating the yearly data on a single raster
+for (year in ano){
+  year2<-year+1
+  arquivo1<- sprintf('mapbiomas-brazil-collection-50-matogrosso-%s_%s-0000000000-0000000000.tif', year,year2)
+  arquivo2<- sprintf('mapbiomas-brazil-collection-50-matogrosso-%s_%s-0000000000-0000031744.tif', year,year2)
+  arquivo3<- sprintf('mapbiomas-brazil-collection-50-matogrosso-%s_%s-0000031744-0000000000.tif', year,year2)
+  arquivo4<- sprintf('mapbiomas-brazil-collection-50-matogrosso-%s_%s-0000031744-0000031744.tif', year,year2)
+  imported_raster1<-raster(arquivo1)
+  imported_raster2<-raster(arquivo2)
+  imported_raster3<-raster(arquivo3)
+  imported_raster4<-raster(arquivo4)
+  mt<-raster::merge(imported_raster1,imported_raster2,imported_raster3,imported_raster4)
+  remove(arquivo1,arquivo2,arquivo3,arquivo4,imported_raster1,imported_raster2,imported_raster3,imported_raster4)
+  a<-projectRaster(mt, crs = "+init=epsg:5641")
+  mt <- ratify(a)
+  mt<-crop(mt,mato_grosso)
+  writeRaster(mt,paste(sprintf('mt-tde-%s.tif', year)))
+}
+
