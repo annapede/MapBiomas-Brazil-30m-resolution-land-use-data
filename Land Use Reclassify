@@ -1,0 +1,531 @@
+######################################## Looping to reclassify data #########################################
+
+# The transition classification categories that I considered are explained in the file "LAND TRANSITION CLASSIFICATION"
+
+#Set the diretory where the agreggated yearly land use transition data is
+setwd("C:/Users/XXXXX")
+ano<-list(2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018)
+
+####### F2P 
+
+for (year in ano){
+  arquivo<- sprintf('mt-tde-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  f <- c(0,114,0,114,115,1,115,214,0,214,215,1,215,314,0,314,315,1,315,414,0,414,415,1,415,514,0,514,515,1,515,4000,0)
+  f_mat <- matrix(f, ncol=3, byrow=TRUE)
+  reclass <- reclassify(imported_raster, f_mat)
+  remove(imported_raster,arquivo)
+  writeRaster(reclass,paste(sprintf('t-f2p-%s.tif', year)))
+}
+
+
+####### P2C 
+for (year in ano){
+  arquivo<- sprintf('mt-tde-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  f <- c(0,1517,0,1517,1520,1,1520,4000,0)
+  f_mat <- matrix(f, ncol=3, byrow=TRUE)
+  reclass <- reclassify(imported_raster, f_mat)
+  remove(imported_raster,arquivo)
+  writeRaster(reclass,paste(sprintf('t-p2c-%s.tif', year)))
+}
+
+
+####### f2C 
+for (year in ano){
+  arquivo<- sprintf('mt-tde-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  f <- c(0,117,0,117,120,1,120,217,0,217,220,1,220,317,0,317,320,1,320,417,0,417,420,1,420,517,0,517,520,1,520,4000,0)
+  f_mat <- matrix(f, ncol=3, byrow=TRUE)
+  reclass <- reclassify(imported_raster, f_mat)
+  remove(imported_raster,arquivo)
+  writeRaster(reclass,paste(sprintf('t-f2c-%s.tif', year)))
+}
+
+############################# Aggregating the 30m data in 300 m resolution################################
+
+#Set directory where the files should be saved
+setwd("C:/Users/XXXXX/Transition_Data_300m")
+
+ano<-list(2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018)
+
+for (year in ano){
+  arquivo<- sprintf('t-fcl-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  imported_rastera<-aggregate(imported_raster,fact=10,fun=mean)
+  assign(sprintf('fcl-%s', year),imported_rastera)
+}
+fcl<-stack(`fcl-2000`,`fcl-2001`,`fcl-2002`,`fcl-2003`,`fcl-2004`,`fcl-2005`,`fcl-2006`,`fcl-2007`,`fcl-2008`,`fcl-2009`,`fcl-2010`,`fcl-2011`)
+save(fcl,file="fcl.RData")
+
+
+for (year in ano){
+  arquivo<- sprintf('t-f2c-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  imported_rastera<-aggregate(imported_raster,fact=10,fun=mean)
+  assign(sprintf('f2c-%s', year),imported_rastera)
+}
+f2c<-stack(`f2c-2000`,`f2c-2001`,`f2c-2002`,`f2c-2003`,`f2c-2004`,`f2c-2005`,`f2c-2006`,`f2c-2007`,`f2c-2008`,`f2c-2009`,`f2c-2010`,`f2c-2011`)
+save(f2c,file="f2c.RData")
+#remove(`f2c-2000`,`f2c-2001`,`f2c-2002`,`f2c-2003`,`f2c-2004`,`f2c-2005`,`f2c-2006`,`f2c-2007`,`f2c-2008`,`f2c-2009`,`f2c-2010`,`f2c-2011`)
+
+for (year in ano){
+  arquivo<- sprintf('t-p2c-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  imported_rastera<-aggregate(imported_raster,fact=10,fun=mean)
+  assign(sprintf('p2c-%s', year),imported_rastera)
+}
+p2c<-stack(`p2c-2000`,`p2c-2001`,`p2c-2002`,`p2c-2003`,`p2c-2004`,`p2c-2005`,`p2c-2006`,`p2c-2007`,`p2c-2008`,`p2c-2009`,`p2c-2010`,`p2c-2011`)
+save(p2c,file="p2c.RData")
+#remove(`p2c-2000`,`p2c-2001`,`p2c-2002`,`p2c-2003`,`p2c-2004`,`p2c-2005`,`p2c-2006`,`p2c-2007`,`p2c-2008`,`p2c-2009`,`p2c-2010`,`p2c-2011`)
+
+
+for (year in ano){
+  arquivo<- sprintf('t-f2p-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  imported_rastera<-aggregate(imported_raster,fact=100,fun=mean)
+  assign(sprintf('f2p-%s', year),imported_rastera)
+}
+
+
+f2p<-stack(`f2p-2000`,`f2p-2001`,`f2p-2002`,`f2p-2003`,`f2p-2004`,`f2p-2005`,`f2p-2006`,`f2p-2007`,`f2p-2008`,`f2p-2009`,`f2p-2010`,`f2p-2011`
+save(f2p,file="f2p.RData")
+remove(`f2p-2000`,`f2p-2001`,`f2p-2002`,`f2p-2003`,`f2p-2004`,`f2p-2005`,`f2p-2006`,`f2p-2007`,`f2p-2008`,`f2p-2009`,`f2p-2010`,`f2p-2011`)
+
+
+### Transforming the Raster Stacks in DataFrames ###
+
+setwd("C:/Users/Anna Costola Pede/Desktop/Dissertacao/Transicoes_30m")
+
+#Stacking the 4 different classifications in a single dataframe
+camadas<-stack(fcl,f2c,p2c,f2p)
+writeRaster(camadas,'camadas.tif')
+
+library(sf)
+library(stars)
+camadast<-read_stars('camadas.tif')
+teste3<-st_as_sf(camadast,as_points=TRUE,merge=FALSE)
+id<-rownames(teste3)
+Transicoes_Uso_solo<-cbind(id=id,teste3)
+remove(teste3)
+
+
+###### Arrumando os nomes ######
+
+names(Transicoes_Uso_solo)[2]<-"fcl2000"
+names(Transicoes_Uso_solo)[3]<-"fcl2001"
+names(Transicoes_Uso_solo)[4]<-"fcl2002"
+names(Transicoes_Uso_solo)[5]<-"fcl2003"
+names(Transicoes_Uso_solo)[6]<-"fcl2004"
+names(Transicoes_Uso_solo)[7]<-"fcl2005"
+names(Transicoes_Uso_solo)[8]<-"fcl2006"
+names(Transicoes_Uso_solo)[9]<-"fcl2007"
+names(Transicoes_Uso_solo)[10]<-"fcl2008"
+names(Transicoes_Uso_solo)[11]<-"fcl2009"
+names(Transicoes_Uso_solo)[12]<-"fcl2010"
+names(Transicoes_Uso_solo)[13]<-"fcl2011"
+
+names(Transicoes_Uso_solo)[14]<-"f2c2000"
+names(Transicoes_Uso_solo)[15]<-"f2c2001"
+names(Transicoes_Uso_solo)[16]<-"f2c2002"
+names(Transicoes_Uso_solo)[17]<-"f2c2003"
+names(Transicoes_Uso_solo)[18]<-"f2c2004"
+names(Transicoes_Uso_solo)[19]<-"f2c2005"
+names(Transicoes_Uso_solo)[20]<-"f2c2006"
+names(Transicoes_Uso_solo)[21]<-"f2c2007"
+names(Transicoes_Uso_solo)[22]<-"f2c2008"
+names(Transicoes_Uso_solo)[23]<-"f2c2009"
+names(Transicoes_Uso_solo)[24]<-"f2c2010"
+names(Transicoes_Uso_solo)[25]<-"f2c2011"
+
+names(Transicoes_Uso_solo)[26]<-"p2c2000"
+names(Transicoes_Uso_solo)[27]<-"p2c2001"
+names(Transicoes_Uso_solo)[28]<-"p2c2002"
+names(Transicoes_Uso_solo)[29]<-"p2c2003"
+names(Transicoes_Uso_solo)[30]<-"p2c2004"
+names(Transicoes_Uso_solo)[31]<-"p2c2005"
+names(Transicoes_Uso_solo)[32]<-"p2c2006"
+names(Transicoes_Uso_solo)[33]<-"p2c2007"
+names(Transicoes_Uso_solo)[34]<-"p2c2008"
+names(Transicoes_Uso_solo)[35]<-"p2c2009"
+names(Transicoes_Uso_solo)[36]<-"p2c2010"
+names(Transicoes_Uso_solo)[37]<-"p2c2011"
+
+names(Transicoes_Uso_solo)[38]<-"f2p2000"
+names(Transicoes_Uso_solo)[39]<-"f2p2001"
+names(Transicoes_Uso_solo)[40]<-"f2p2002"
+names(Transicoes_Uso_solo)[41]<-"f2p2003"
+names(Transicoes_Uso_solo)[42]<-"f2p2004"
+names(Transicoes_Uso_solo)[43]<-"f2p2005"
+names(Transicoes_Uso_solo)[44]<-"f2p2006"
+names(Transicoes_Uso_solo)[45]<-"f2p2007"
+names(Transicoes_Uso_solo)[46]<-"f2p2008"
+names(Transicoes_Uso_solo)[47]<-"f2p2009"
+names(Transicoes_Uso_solo)[48]<-"f2p2010"
+names(Transicoes_Uso_solo)[49]<-"f2p2011"
+
+save(Transicoes_Uso_solo,file="Transicoes_300M.RData")
+
+############################# Loopings para fazer a classificacao
+
+
+# In reclassify I do not include the lowest value 
+### FCL Forest Cover Loss - Desmatamento
+#Forest:1,2,3,4,5,12
+#Considerar todas as categorias que o mapbiomas coloca como antropico:9,14,15,18,19,20,21,24,30,31
+setwd("C:/Users/Anna Costola Pede/Desktop/Dissertacao/Transicoes_30m")
+ano<-list(2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011)
+for (year in ano){
+  arquivo<- sprintf('mt-tde30-%s.tif', year)
+  imported_raster<-raster(arquivo)
+   f<- c(0,108,0,108,109,1,109,113,0,113,121,1,121,123,0,123,124,1,124,129,0,129,131,1,
+         131,208,0,208,209,1,209,213,0,213,221,1,221,223,0,223,224,1,224,229,0,229,231,1,
+         231,308,0,308,309,1,309,313,0,313,321,1,321,323,0,323,324,1,324,329,0,329,331,1,
+         331,408,0,408,409,1,409,413,0,413,421,1,421,423,0,423,424,1,424,429,0,429,431,1,
+         431,508,0,508,509,1,509,513,0,513,521,1,521,523,0,523,524,1,524,529,0,529,531,1,
+         531,1208,0,1208,1209,1,1209,1213,0,1213,1221,1,1221,1223,0,1223,1224,1,1224,1229,0,1229,1231,1,
+         1231,4000,0)
+  f_mat <- matrix(f, ncol=3, byrow=TRUE)
+  reclass <- reclassify(imported_raster, f_mat)
+  remove(imported_raster,arquivo)
+  writeRaster(reclass,paste(sprintf('t-fcl-%s.tif', year)))
+}
+
+####### F2P 
+#Pasture:15
+#Forest:1,2,3,4,5,12
+#Codigos Considerados:115,215,315,415,515,1215
+setwd("C:/Users/Anna Costola Pede/Desktop/Dissertacao/Transicoes_30m")
+ano<-list(2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011)
+for (year in ano){
+  arquivo<- sprintf('mt-tde30-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  f <- c(0,114,0,114,115,1,115,214,0,214,215,1,215,314,0,314,315,1,315,414,0,414,415,1,415,514,0,514,515,1,515,1214,0,1214,1215,1,1215,4000,0)
+  f_mat <- matrix(f, ncol=3, byrow=TRUE)
+  reclass <- reclassify(imported_raster, f_mat)
+  remove(imported_raster,arquivo)
+  writeRaster(reclass,paste(sprintf('t-f2p-%s.tif', year)))
+}
+
+
+
+## Pegando informacoes dos dados: 
+freq(teste)
+
+####### P2C 
+#Crop:18,19,20,21
+setwd("C:/Users/Anna Costola Pede/Desktop/Dissertacao/Transicoes_30m")
+ano<-list(2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011)
+for (year in ano){
+  arquivo<- sprintf('mt-tde30-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  f <- c(0,1517,0,1517,1521,1,1521,4000,0)
+  f_mat <- matrix(f, ncol=3, byrow=TRUE)
+  reclass <- reclassify(imported_raster, f_mat)
+  remove(imported_raster,arquivo)
+  writeRaster(reclass,paste(sprintf('t-p2c-%s.tif', year)))
+}
+
+
+####### f2C 
+#Forest:1,2,3,4,5,12
+#Crop:18,19,20,21
+setwd("C:/Users/Anna Costola Pede/Desktop/Dissertacao/Transicoes_30m")
+ano<-list(2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011)
+for (year in ano){
+  arquivo<- sprintf('mt-tde30-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  f <- c(0,117,0,117,121,1,121,217,0,217,221,1,221,317,0,318,321,1,321,417,0,418,421,1,421,517,0,518,521,1,521,1217,0,1218,1221,1,1221,4000,0)
+  f_mat <- matrix(f, ncol=3, byrow=TRUE)
+  reclass <- reclassify(imported_raster, f_mat)
+  remove(imported_raster,arquivo)
+  writeRaster(reclass,paste(sprintf('t-f2c-%s.tif', year)))
+}
+
+
+
+############################# Aggregating the 30m pixels into 300m resolution and estimating the mean of each land use ################################
+
+setwd("C:/Users/Anna Costola Pede/Desktop/Dissertacao/Transicoes_30m")
+ano<-list(2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011)
+for (year in ano){
+  arquivo<- sprintf('t-fcl-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  imported_rastera<-aggregate(imported_raster,fact=10,fun=mean)
+  assign(sprintf('fcl-%s', year),imported_rastera)
+}
+
+
+fcl<-stack(`fcl-2000`,`fcl-2001`,`fcl-2002`,`fcl-2003`,`fcl-2004`,`fcl-2005`,`fcl-2006`,`fcl-2007`,`fcl-2008`,`fcl-2009`,`fcl-2010`,`fcl-2011`)
+
+save(fcl,file="fcl.RData")
+
+setwd("C:/Users/Anna Costola Pede/Desktop/Dissertacao/Transicoes_30m")
+ano<-list(2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011)
+for (year in ano){
+  arquivo<- sprintf('t-f2c-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  imported_rastera<-aggregate(imported_raster,fact=10,fun=mean)
+  assign(sprintf('f2c-%s', year),imported_rastera)
+}
+
+
+f2c<-stack(`f2c-2000`,`f2c-2001`,`f2c-2002`,`f2c-2003`,`f2c-2004`,`f2c-2005`,`f2c-2006`,`f2c-2007`,`f2c-2008`,`f2c-2009`,`f2c-2010`,`f2c-2011`)
+
+save(f2c,file="f2c.RData")
+
+#remove(`f2c-2000`,`f2c-2001`,`f2c-2002`,`f2c-2003`,`f2c-2004`,`f2c-2005`,`f2c-2006`,`f2c-2007`,`f2c-2008`,`f2c-2009`,`f2c-2010`,`f2c-2011`)
+
+setwd("C:/Users/Anna Costola Pede/Desktop/Dissertacao/Transicoes_30m")
+ano<-list(2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011)
+for (year in ano){
+  arquivo<- sprintf('t-p2c-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  imported_rastera<-aggregate(imported_raster,fact=100,fun=mean)
+  assign(sprintf('p2c-%s', year),imported_rastera)
+}
+
+
+p2c<-stack(`p2c-2000`,`p2c-2001`,`p2c-2002`,`p2c-2003`,`p2c-2004`,`p2c-2005`,`p2c-2006`,`p2c-2007`,`p2c-2008`,`p2c-2009`,`p2c-2010`,`p2c-2011`)
+
+save(p2c,file="p2c.RData")
+#remove(`p2c-2000`,`p2c-2001`,`p2c-2002`,`p2c-2003`,`p2c-2004`,`p2c-2005`,`p2c-2006`,`p2c-2007`,`p2c-2008`,`p2c-2009`,`p2c-2010`,`p2c-2011`)
+
+setwd("C:/Users/Anna Costola Pede/Desktop/Dissertacao/Transicoes_30m")
+ano<-list(2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011)
+for (year in ano){
+  arquivo<- sprintf('t-f2p-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  imported_rastera<-aggregate(imported_raster,fact=100,fun=mean)
+  assign(sprintf('f2p-%s', year),imported_rastera)
+}
+
+
+f2p<-stack(`f2p-2000`,`f2p-2001`,`f2p-2002`,`f2p-2003`,`f2p-2004`,`f2p-2005`,`f2p-2006`,`f2p-2007`,`f2p-2008`,`f2p-2009`,`f2p-2010`,`f2p-2011`)
+
+
+save(f2p,file="f2p.RData")
+
+#remove(`f2p-2000`,`f2p-2001`,`f2p-2002`,`f2p-2003`,`f2p-2004`,`f2p-2005`,`f2p-2006`,`f2p-2007`,`f2p-2008`,`f2p-2009`,`f2p-2010`,`f2p-2011`)
+
+
+### Transformando em data frames ###
+
+
+
+# Unindo em um unico raster
+setwd("C:/Users/Anna Costola Pede/Desktop/Dissertacao/Transicoes_30m")
+
+
+camadas<-stack(fcl,f2c,p2c,f2p)
+writeRaster(camadas,'camadas.tif')
+
+
+library(sf)
+library(stars)
+
+camadast<-read_stars('camadas.tif')
+
+teste3<-st_as_sf(camadast,as_points=TRUE,merge=FALSE)
+id<-rownames(teste3)
+Transicoes_Uso_solo<-cbind(id=id,teste3)
+remove(teste3)
+
+### Refazendo os dados - não foram cortados
+load("/Users/annapede/Desktop/Dissertation/Data/Running_Data/Transicao Uso/3_km/f2c.RData")
+load("/Users/annapede/Desktop/Dissertation/Data/Running_Data/Transicao Uso/3_km/f2p.RData")
+load("/Users/annapede/Desktop/Dissertation/Data/Running_Data/Transicao Uso/3_km/fcl.RData")
+load("/Users/annapede/Desktop/Dissertation/Data/Running_Data/Transicao Uso/3_km/p2c.RData")
+library(raster)
+f2cc<-crop(f2c,mato_grosso)
+
+###### Arrumando os nomes ######
+
+names(Transicoes_Uso_solo)[2]<-"fcl2000"
+names(Transicoes_Uso_solo)[3]<-"fcl2001"
+names(Transicoes_Uso_solo)[4]<-"fcl2002"
+names(Transicoes_Uso_solo)[5]<-"fcl2003"
+names(Transicoes_Uso_solo)[6]<-"fcl2004"
+names(Transicoes_Uso_solo)[7]<-"fcl2005"
+names(Transicoes_Uso_solo)[8]<-"fcl2006"
+names(Transicoes_Uso_solo)[9]<-"fcl2007"
+names(Transicoes_Uso_solo)[10]<-"fcl2008"
+names(Transicoes_Uso_solo)[11]<-"fcl2009"
+names(Transicoes_Uso_solo)[12]<-"fcl2010"
+names(Transicoes_Uso_solo)[13]<-"fcl2011"
+
+names(Transicoes_Uso_solo)[14]<-"f2c2000"
+names(Transicoes_Uso_solo)[15]<-"f2c2001"
+names(Transicoes_Uso_solo)[16]<-"f2c2002"
+names(Transicoes_Uso_solo)[17]<-"f2c2003"
+names(Transicoes_Uso_solo)[18]<-"f2c2004"
+names(Transicoes_Uso_solo)[19]<-"f2c2005"
+names(Transicoes_Uso_solo)[20]<-"f2c2006"
+names(Transicoes_Uso_solo)[21]<-"f2c2007"
+names(Transicoes_Uso_solo)[22]<-"f2c2008"
+names(Transicoes_Uso_solo)[23]<-"f2c2009"
+names(Transicoes_Uso_solo)[24]<-"f2c2010"
+names(Transicoes_Uso_solo)[25]<-"f2c2011"
+
+names(Transicoes_Uso_solo)[26]<-"p2c2000"
+names(Transicoes_Uso_solo)[27]<-"p2c2001"
+names(Transicoes_Uso_solo)[28]<-"p2c2002"
+names(Transicoes_Uso_solo)[29]<-"p2c2003"
+names(Transicoes_Uso_solo)[30]<-"p2c2004"
+names(Transicoes_Uso_solo)[31]<-"p2c2005"
+names(Transicoes_Uso_solo)[32]<-"p2c2006"
+names(Transicoes_Uso_solo)[33]<-"p2c2007"
+names(Transicoes_Uso_solo)[34]<-"p2c2008"
+names(Transicoes_Uso_solo)[35]<-"p2c2009"
+names(Transicoes_Uso_solo)[36]<-"p2c2010"
+names(Transicoes_Uso_solo)[37]<-"p2c2011"
+
+names(Transicoes_Uso_solo)[38]<-"f2p2000"
+names(Transicoes_Uso_solo)[39]<-"f2p2001"
+names(Transicoes_Uso_solo)[40]<-"f2p2002"
+names(Transicoes_Uso_solo)[41]<-"f2p2003"
+names(Transicoes_Uso_solo)[42]<-"f2p2004"
+names(Transicoes_Uso_solo)[43]<-"f2p2005"
+names(Transicoes_Uso_solo)[44]<-"f2p2006"
+names(Transicoes_Uso_solo)[45]<-"f2p2007"
+names(Transicoes_Uso_solo)[46]<-"f2p2008"
+names(Transicoes_Uso_solo)[47]<-"f2p2009"
+names(Transicoes_Uso_solo)[48]<-"f2p2010"
+names(Transicoes_Uso_solo)[49]<-"f2p2011"
+
+save(Transicoes_Uso_solo,file="Transicoes_3KM.RData")
+
+################## Testando resolucao maior ####################
+
+setwd("C:/Users/Anna Costola Pede/Desktop/Dissertacao/Transicoes_30m")
+ano<-list(2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011)
+for (year in ano){
+  arquivo<- sprintf('t-fcl-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  imported_rastera<-aggregate(imported_raster,fact=20,fun=mean)
+  assign(sprintf('fcl-%s', year),imported_rastera)
+}
+
+
+fcl<-stack(`fcl-2000`,`fcl-2001`,`fcl-2002`,`fcl-2003`,`fcl-2004`,`fcl-2005`,`fcl-2006`,`fcl-2007`,`fcl-2008`,`fcl-2009`,`fcl-2010`,`fcl-2011`)
+
+
+setwd("C:/Users/Anna Costola Pede/Desktop/Dissertacao/Transicoes_30m")
+ano<-list(2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011)
+for (year in ano){
+  arquivo<- sprintf('t-f2c-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  imported_rastera<-aggregate(imported_raster,fact=20,fun=mean)
+  assign(sprintf('f2c-%s', year),imported_rastera)
+}
+
+
+f2c<-stack(`f2c-2000`,`f2c-2001`,`f2c-2002`,`f2c-2003`,`f2c-2004`,`f2c-2005`,`f2c-2006`,`f2c-2007`,`f2c-2008`,`f2c-2009`,`f2c-2010`,`f2c-2011`)
+
+
+setwd("C:/Users/Anna Costola Pede/Desktop/Dissertacao/Transicoes_30m")
+ano<-list(2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011)
+for (year in ano){
+  arquivo<- sprintf('t-p2c-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  imported_rastera<-aggregate(imported_raster,fact=20,fun=mean)
+  assign(sprintf('p2c-%s', year),imported_rastera)
+}
+
+
+p2c<-stack(`p2c-2000`,`p2c-2001`,`p2c-2002`,`p2c-2003`,`p2c-2004`,`p2c-2005`,`p2c-2006`,`p2c-2007`,`p2c-2008`,`p2c-2009`,`p2c-2010`,`p2c-2011`)
+
+setwd("C:/Users/Anna Costola Pede/Desktop/Dissertacao/Transicoes_30m")
+ano<-list(2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011)
+for (year in ano){
+  arquivo<- sprintf('t-f2p-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  imported_rastera<-aggregate(imported_raster,fact=20,fun=mean)
+  assign(sprintf('f2p-%s', year),imported_rastera)
+}
+
+
+f2p<-stack(`f2p-2000`,`f2p-2001`,`f2p-2002`,`f2p-2003`,`f2p-2004`,`f2p-2005`,`f2p-2006`,`f2p-2007`,`f2p-2008`,`f2p-2009`,`f2p-2010`,`f2p-2011`)
+
+
+### Transformando em data frames ###
+
+### Check dados
+setwd("~/Desktop/Dissertation/Data/Running_Data/Transicao Uso")
+
+camadas<-raster('camadas.tif')
+
+
+# Unindo em um unico raster
+setwd("C:/Users/Anna Costola Pede/Desktop/Dissertacao/Transicoes_30m")
+camadas<-stack(fcl,f2c,p2c,f2p)
+writeRaster(camadas,'camadas_600m.tif')
+
+
+library(sf)
+library(stars)
+
+camadast<-read_stars('camadas_600m.tif')
+
+teste3<-st_as_sf(camadast,as_points=TRUE,merge=FALSE)
+id<-rownames(teste3)
+Transicoes_Uso_solo<-cbind(id=id,teste3)
+remove(teste3)
+
+###### Arrumando os nomes ######
+
+names(Transicoes_Uso_solo)[2]<-"fcl2000"
+names(Transicoes_Uso_solo)[3]<-"fcl2001"
+names(Transicoes_Uso_solo)[4]<-"fcl2002"
+names(Transicoes_Uso_solo)[5]<-"fcl2003"
+names(Transicoes_Uso_solo)[6]<-"fcl2004"
+names(Transicoes_Uso_solo)[7]<-"fcl2005"
+names(Transicoes_Uso_solo)[8]<-"fcl2006"
+names(Transicoes_Uso_solo)[9]<-"fcl2007"
+names(Transicoes_Uso_solo)[10]<-"fcl2008"
+names(Transicoes_Uso_solo)[11]<-"fcl2009"
+names(Transicoes_Uso_solo)[12]<-"fcl2010"
+names(Transicoes_Uso_solo)[13]<-"fcl2011"
+
+names(Transicoes_Uso_solo)[14]<-"f2c2000"
+names(Transicoes_Uso_solo)[15]<-"f2c2001"
+names(Transicoes_Uso_solo)[16]<-"f2c2002"
+names(Transicoes_Uso_solo)[17]<-"f2c2003"
+names(Transicoes_Uso_solo)[18]<-"f2c2004"
+names(Transicoes_Uso_solo)[19]<-"f2c2005"
+names(Transicoes_Uso_solo)[20]<-"f2c2006"
+names(Transicoes_Uso_solo)[21]<-"f2c2007"
+names(Transicoes_Uso_solo)[22]<-"f2c2008"
+names(Transicoes_Uso_solo)[23]<-"f2c2009"
+names(Transicoes_Uso_solo)[24]<-"f2c2010"
+names(Transicoes_Uso_solo)[25]<-"f2c2011"
+
+names(Transicoes_Uso_solo)[26]<-"p2c2000"
+names(Transicoes_Uso_solo)[27]<-"p2c2001"
+names(Transicoes_Uso_solo)[28]<-"p2c2002"
+names(Transicoes_Uso_solo)[29]<-"p2c2003"
+names(Transicoes_Uso_solo)[30]<-"p2c2004"
+names(Transicoes_Uso_solo)[31]<-"p2c2005"
+names(Transicoes_Uso_solo)[32]<-"p2c2006"
+names(Transicoes_Uso_solo)[33]<-"p2c2007"
+names(Transicoes_Uso_solo)[34]<-"p2c2008"
+names(Transicoes_Uso_solo)[35]<-"p2c2009"
+names(Transicoes_Uso_solo)[36]<-"p2c2010"
+names(Transicoes_Uso_solo)[37]<-"p2c2011"
+
+names(Transicoes_Uso_solo)[38]<-"f2p2000"
+names(Transicoes_Uso_solo)[39]<-"f2p2001"
+names(Transicoes_Uso_solo)[40]<-"f2p2002"
+names(Transicoes_Uso_solo)[41]<-"f2p2003"
+names(Transicoes_Uso_solo)[42]<-"f2p2004"
+names(Transicoes_Uso_solo)[43]<-"f2p2005"
+names(Transicoes_Uso_solo)[44]<-"f2p2006"
+names(Transicoes_Uso_solo)[45]<-"f2p2007"
+names(Transicoes_Uso_solo)[46]<-"f2p2008"
+names(Transicoes_Uso_solo)[47]<-"f2p2009"
+names(Transicoes_Uso_solo)[48]<-"f2p2010"
+names(Transicoes_Uso_solo)[49]<-"f2p2011"
+
+save(Transicoes_Uso_solo,file="Transicoes_600M.RData")
+
+
