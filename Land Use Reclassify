@@ -109,7 +109,7 @@ save(p2c,file="p2c.RData")
 for (year in ano){
   arquivo<- sprintf('t-f2p-%s.tif', year)
   imported_raster<-raster(arquivo)
-  imported_rastera<-aggregate(imported_raster,fact=100,fun=mean)
+  imported_rastera<-aggregate(imported_raster,fact=10,fun=mean)
   assign(sprintf('f2p-%s', year),imported_rastera)
 }
 
