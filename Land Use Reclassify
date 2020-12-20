@@ -68,79 +68,88 @@ for (year in ano){
    writeRaster(reclass,paste(sprintf('t-c2s-%s.tif', year)))
 }
 
-############################# Aggregating the 30m data in 300 m resolution################################
+############################# Aggregating the 30m data in 900 m resolution################################
 
 #Set directory where the files should be saved
 setwd("C:/Users/XXXXX/Transition_Data_300m")
 
 ano<-list(2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014)
 
+
+for (year in ano){
+  arquivo<- sprintf('t-f2s-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  imported_rastera<-aggregate(imported_raster,fact=30,fun=mean)
+  assign(sprintf('f2s-%s', year),imported_rastera)
+}
+
+f2s<-stack(`f2s-2000`,`f2s-2001`,`f2s-2002`,`f2s-2003`,`f2s-2004`,`f2s-2005`,`f2s-2006`,`f2s-2007`,`f2s-2008`,`f2s-2009`,`f2s-2010`,`f2s-2011`,`f2s-2012`,`f2s-2013`,`f2s-2014`,`f2s-2015`,`f2s-2016`,`f2s-2017`,`f2s-2018`)
+writeRaster(f2s,filename="f2s.tif",format="GTiff")
+camadast<-read_stars("f2s.tif")
+f2s_frame<-st_as_sf(camadast,as_points=TRUE)
+save(f2s_frame,file="F2S_frame.RData")
+
+for (year in ano){
+  arquivo<- sprintf('t-p2s-%s.tif', year)
+  imported_raster<-raster(arquivo)
+  imported_rastera<-aggregate(imported_raster,fact=30,fun=mean)
+  assign(sprintf('p2s-%s', year),imported_rastera)
+}
+
+p2s<-stack(`p2s-2000`,`p2s-2001`,`p2s-2002`,`p2s-2003`,`p2s-2004`,`p2s-2005`,`p2s-2006`,`p2s-2007`,`p2s-2008`,`p2s-2009`,`p2s-2010`,`p2s-2011`,`p2s-2012`,`p2s-2013`,`p2s-2014`,`p2s-2015`,`p2s-2016`,`p2s-2017`,`p2s-2018`)
+writeRaster(p2s,filename="p2s.tif",format="GTiff")
+camadast<-read_stars("p2s.tif")
+p2s_frame<-st_as_sf(camadast,as_points=TRUE)
+save(p2s_frame,file="P2S_frame.RData")
+
 for (year in ano){
   arquivo<- sprintf('t-fcl-%s.tif', year)
   imported_raster<-raster(arquivo)
-  imported_rastera<-aggregate(imported_raster,fact=10,fun=mean)
+  imported_rastera<-aggregate(imported_raster,fact=30,fun=mean)
   assign(sprintf('fcl-%s', year),imported_rastera)
 }
-fcl<-stack(`fcl-2000`,`fcl-2001`,`fcl-2002`,`fcl-2003`,`fcl-2004`,`fcl-2005`,`fcl-2006`,`fcl-2007`,`fcl-2008`,`fcl-2009`,`fcl-2010`,`fcl-2011`)
 
+Fcl<-stack(`fcl-2000`,`fcl-2001`,`fcl-2002`,`fcl-2003`,`fcl-2004`,`fcl-2005`,`fcl-2006`,`fcl-2007`,`fcl-2008`,`fcl-2009`,`fcl-2010`,`fcl-2011`,`fcl-2012`,`fcl-2013`,`fcl-2014`,`fcl-2015`,`fcl-2016`,`fcl-2017`,`fcl-2018`)
 
-for (year in ano){
-  arquivo<- sprintf('t-f2c-%s.tif', year)
-  imported_raster<-raster(arquivo)
-  imported_rastera<-aggregate(imported_raster,fact=10,fun=mean)
-  assign(sprintf('f2c-%s', year),imported_rastera)
-}
-f2c<-stack(`f2c-2000`,`f2c-2001`,`f2c-2002`,`f2c-2003`,`f2c-2004`,`f2c-2005`,`f2c-2006`,`f2c-2007`,`f2c-2008`,`f2c-2009`,`f2c-2010`,`f2c-2011`)
-save(f2c,file="f2c.RData")
-#remove(`f2c-2000`,`f2c-2001`,`f2c-2002`,`f2c-2003`,`f2c-2004`,`f2c-2005`,`f2c-2006`,`f2c-2007`,`f2c-2008`,`f2c-2009`,`f2c-2010`,`f2c-2011`)
+writeRaster(Fcl,filename="fcl.tif",format="GTiff")
+camadast<-read_stars("fcl.tif")
+fcl_frame<-st_as_sf(camadast,as_points=TRUE)
+save(fcl_frame,file="FCL_frame.RData")
 
 for (year in ano){
-  arquivo<- sprintf('t-p2c-%s.tif', year)
+  arquivo<- sprintf('t-c2s-%s.tif', year)
   imported_raster<-raster(arquivo)
-  imported_rastera<-aggregate(imported_raster,fact=10,fun=mean)
-  assign(sprintf('p2c-%s', year),imported_rastera)
-}
-p2c<-stack(`p2c-2000`,`p2c-2001`,`p2c-2002`,`p2c-2003`,`p2c-2004`,`p2c-2005`,`p2c-2006`,`p2c-2007`,`p2c-2008`,`p2c-2009`,`p2c-2010`,`p2c-2011`)
-
-
-for (year in ano){
-  arquivo<- sprintf('t-f2p-%s.tif', year)
-  imported_raster<-raster(arquivo)
-  imported_rastera<-aggregate(imported_raster,fact=10,fun=mean)
-  assign(sprintf('f2p-%s', year),imported_rastera)
+  imported_rastera<-aggregate(imported_raster,fact=30,fun=mean)
+  assign(sprintf('c2s-%s', year),imported_rastera)
 }
 
-f2p<-stack(`f2p-2000`,`f2p-2001`,`f2p-2002`,`f2p-2003`,`f2p-2004`,`f2p-2005`,`f2p-2006`,`f2p-2007`,`f2p-2008`,`f2p-2009`,`f2p-2010`,`f2p-2011`)
+c2s<-stack(`c2s-2000`,`c2s-2001`,`c2s-2002`,`c2s-2003`,`c2s-2004`,`c2s-2005`,`c2s-2006`,`c2s-2007`,`c2s-2008`,`c2s-2009`,`c2s-2010`,`c2s-2011`,`c2s-2012`,`c2s-2013`,`c2s-2014`,`c2s-2015`,`c2s-2016`,`c2s-2017`,`c2s-2018`)
 
-### Transforming the Raster Stacks in DataFrames ###
+writeRaster(c2s,filename="c2s.tif",format="GTiff")
+camadast<-read_stars("c2s.tif")
+c2s_frame<-st_as_sf(camadast,as_points=TRUE)
+save(c2s_frame,file="C2s_frame.RData")
 
-setwd("C:/Users/Anna Costola Pede/Desktop/Dissertacao/Transicoes_30m")
-
-#Stacking the 4 different classifications in a single dataframe
-camadas<-stack(fcl,f2c,p2c,f2p)
-writeRaster(camadas,'camadas.tif')
-
-library(sf)
-library(stars)
-camadast<-read_stars('camadas.tif')
-teste3<-st_as_sf(camadast,as_points=TRUE,merge=FALSE)
-id<-rownames(teste3)
-Transicoes_Uso_solo<-cbind(id=id,teste3)
-remove(teste3)
-
-
-###### Setting Column Names
+usos<-stack(`fcl-2000`,`fcl-2001`,`fcl-2002`,`fcl-2003`,`fcl-2004`,`fcl-2005`,`fcl-2006`,`fcl-2007`,`fcl-2008`,`fcl-2009`,`fcl-2010`,`fcl-2011`,`fcl-2012`,`fcl-2013`,`fcl-2014`,`fcl-2015`,`fcl-2016`,`fcl-2017`,`fcl-2018`,`f2s-2000`,`f2s-2001`,`f2s-2002`,`f2s-2003`,`f2s-2004`,`f2s-2005`,`f2s-2006`,`f2s-2007`,`f2s-2008`,`f2s-2009`,`f2s-2010`,`f2s-2011`,`f2s-2012`,`f2s-2013`,`f2s-2014`,`f2s-2015`,`f2s-2016`,`f2s-2017`,`f2s-2018`,`p2s-2000`,`p2s-2001`,`p2s-2002`,`p2s-2003`,`p2s-2004`,`p2s-2005`,`p2s-2006`,`p2s-2007`,`p2s-2008`,`p2s-2009`,`p2s-2010`,`p2s-2011`,`p2s-2012`,`p2s-2013`,`p2s-2014`,`p2s-2015`,`p2s-2016`,`p2s-2017`,`p2s-2018`)
+writeRaster(usos,filename="usos.tif",format="GTiff")
+usos2<-read_stars("usos.tif")
+usos_frame<-st_as_sf(usos2,as_points=TRUE)
 
 list<-list()
-land_change<-list("f2s","p2s","fcl","c2s")
+land_change<-list("fcl","f2s","p2s")
 for(k in land_change){
   for(j in 2000:2018){
     name <- paste(k,j,sep='')
     list<-c(list,name)}
 }
 
-for(i in 1:ncol(Transicoes_Uso_solo)){
-  j=i+1
-   names(Transicoes_Uso_solo)[j] <- list[[i]]
+for(i in 1:ncol(usos_frame)){
+  j=i
+  names(usos_frame)[j] <- list[[i]]
 }
+
+save(usos_frame,file="usos_frame.RData")
+
+
+
 
