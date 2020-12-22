@@ -8,7 +8,7 @@
 
 #Set the diretory where the agreggated yearly land use transition data is
 setwd("C:/Users/XXXXX")
-ano<-list(2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014)
+ano<-list(2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018)
 
 ####### F2S
 f2s <- read_excel("Reclass_Collection5.xlsx", sheet = "F2S", col_names = FALSE)
@@ -145,7 +145,7 @@ for(k in land_change){
 
 for(i in 1:ncol(usos_frame)){
   j=i
-  names(usos_frame)[j] <- list[[i]]
+  names(usos_frame)[j] <- list[i]
 }
 
 save(usos_frame,file="usos_frame.RData")
