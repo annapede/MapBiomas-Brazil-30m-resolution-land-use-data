@@ -9,6 +9,8 @@
 #Set the diretory where the agreggated yearly land use transition data is
 setwd("C:/Users/XXXXX")
 ano<-list(2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018)
+library(raster)
+library(stars)
 
 ####### F2S
 f2s <- read_excel("Reclass_Collection5.xlsx", sheet = "F2S", col_names = FALSE)
@@ -73,82 +75,104 @@ for (year in ano){
 #Set directory where the files should be saved
 setwd("C:/Users/XXXXX/Transition_Data_300m")
 
-ano<-list(2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014)
+ano<-list(2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018)
 
+###################### Fraction of Land that has gone through the land transtion
 
+### F2S Transition
 for (year in ano){
   arquivo<- sprintf('t-f2s-%s.tif', year)
   imported_raster<-raster(arquivo)
   imported_rastera<-aggregate(imported_raster,fact=30,fun=mean)
   assign(sprintf('f2s-%s', year),imported_rastera)
 }
-
 f2s<-stack(`f2s-2000`,`f2s-2001`,`f2s-2002`,`f2s-2003`,`f2s-2004`,`f2s-2005`,`f2s-2006`,`f2s-2007`,`f2s-2008`,`f2s-2009`,`f2s-2010`,`f2s-2011`,`f2s-2012`,`f2s-2013`,`f2s-2014`,`f2s-2015`,`f2s-2016`,`f2s-2017`,`f2s-2018`)
 writeRaster(f2s,filename="f2s.tif",format="GTiff")
 camadast<-read_stars("f2s.tif")
 f2s_frame<-st_as_sf(camadast,as_points=TRUE)
+list<-list()
+land_change<-list("f2s")
+for(k in land_change){
+  for(j in 2000:2018){
+    name <- paste(k,j,sep='')
+    list<-c(list,name)}
+}
+for(i in 1:ncol(f2s_frame)){
+  names(f2s_frame)[i] <- list[i]
+}
 save(f2s_frame,file="F2S_frame.RData")
 
+
+### P2S Transition
 for (year in ano){
   arquivo<- sprintf('t-p2s-%s.tif', year)
   imported_raster<-raster(arquivo)
   imported_rastera<-aggregate(imported_raster,fact=30,fun=mean)
   assign(sprintf('p2s-%s', year),imported_rastera)
 }
-
 p2s<-stack(`p2s-2000`,`p2s-2001`,`p2s-2002`,`p2s-2003`,`p2s-2004`,`p2s-2005`,`p2s-2006`,`p2s-2007`,`p2s-2008`,`p2s-2009`,`p2s-2010`,`p2s-2011`,`p2s-2012`,`p2s-2013`,`p2s-2014`,`p2s-2015`,`p2s-2016`,`p2s-2017`,`p2s-2018`)
 writeRaster(p2s,filename="p2s.tif",format="GTiff")
 camadast<-read_stars("p2s.tif")
 p2s_frame<-st_as_sf(camadast,as_points=TRUE)
+list<-list()
+land_change<-list("p2s")
+for(k in land_change){
+  for(j in 2000:2018){
+    name <- paste(k,j,sep='')
+    list<-c(list,name)}
+}
+for(i in 1:ncol(p2s_frame)){
+  names(p2s_frame)[i] <- list[i]
+}
 save(p2s_frame,file="P2S_frame.RData")
 
+
+### FCL Transition
 for (year in ano){
   arquivo<- sprintf('t-fcl-%s.tif', year)
   imported_raster<-raster(arquivo)
   imported_rastera<-aggregate(imported_raster,fact=30,fun=mean)
   assign(sprintf('fcl-%s', year),imported_rastera)
 }
-
 Fcl<-stack(`fcl-2000`,`fcl-2001`,`fcl-2002`,`fcl-2003`,`fcl-2004`,`fcl-2005`,`fcl-2006`,`fcl-2007`,`fcl-2008`,`fcl-2009`,`fcl-2010`,`fcl-2011`,`fcl-2012`,`fcl-2013`,`fcl-2014`,`fcl-2015`,`fcl-2016`,`fcl-2017`,`fcl-2018`)
-
 writeRaster(Fcl,filename="fcl.tif",format="GTiff")
 camadast<-read_stars("fcl.tif")
 fcl_frame<-st_as_sf(camadast,as_points=TRUE)
+list<-list()
+land_change<-list("fcl")
+for(k in land_change){
+  for(j in 2000:2018){
+    name <- paste(k,j,sep='')
+    list<-c(list,name)}
+}
+for(i in 1:ncol(fcl_frame)){
+  names(fcl_frame)[i] <- list[i]
+}
 save(fcl_frame,file="FCL_frame.RData")
 
+
+### C2S Transition
 for (year in ano){
   arquivo<- sprintf('t-c2s-%s.tif', year)
   imported_raster<-raster(arquivo)
   imported_rastera<-aggregate(imported_raster,fact=30,fun=mean)
   assign(sprintf('c2s-%s', year),imported_rastera)
 }
-
 c2s<-stack(`c2s-2000`,`c2s-2001`,`c2s-2002`,`c2s-2003`,`c2s-2004`,`c2s-2005`,`c2s-2006`,`c2s-2007`,`c2s-2008`,`c2s-2009`,`c2s-2010`,`c2s-2011`,`c2s-2012`,`c2s-2013`,`c2s-2014`,`c2s-2015`,`c2s-2016`,`c2s-2017`,`c2s-2018`)
-
 writeRaster(c2s,filename="c2s.tif",format="GTiff")
 camadast<-read_stars("c2s.tif")
 c2s_frame<-st_as_sf(camadast,as_points=TRUE)
-save(c2s_frame,file="C2s_frame.RData")
-
-usos<-stack(`fcl-2000`,`fcl-2001`,`fcl-2002`,`fcl-2003`,`fcl-2004`,`fcl-2005`,`fcl-2006`,`fcl-2007`,`fcl-2008`,`fcl-2009`,`fcl-2010`,`fcl-2011`,`fcl-2012`,`fcl-2013`,`fcl-2014`,`fcl-2015`,`fcl-2016`,`fcl-2017`,`fcl-2018`,`f2s-2000`,`f2s-2001`,`f2s-2002`,`f2s-2003`,`f2s-2004`,`f2s-2005`,`f2s-2006`,`f2s-2007`,`f2s-2008`,`f2s-2009`,`f2s-2010`,`f2s-2011`,`f2s-2012`,`f2s-2013`,`f2s-2014`,`f2s-2015`,`f2s-2016`,`f2s-2017`,`f2s-2018`,`p2s-2000`,`p2s-2001`,`p2s-2002`,`p2s-2003`,`p2s-2004`,`p2s-2005`,`p2s-2006`,`p2s-2007`,`p2s-2008`,`p2s-2009`,`p2s-2010`,`p2s-2011`,`p2s-2012`,`p2s-2013`,`p2s-2014`,`p2s-2015`,`p2s-2016`,`p2s-2017`,`p2s-2018`)
-writeRaster(usos,filename="usos.tif",format="GTiff")
-usos2<-read_stars("usos.tif")
-usos_frame<-st_as_sf(usos2,as_points=TRUE)
-
 list<-list()
-land_change<-list("fcl","f2s","p2s")
+land_change<-list("c2s")
 for(k in land_change){
   for(j in 2000:2018){
     name <- paste(k,j,sep='')
     list<-c(list,name)}
 }
-
-for(i in 1:ncol(usos_frame)){
-  j=i
-  names(usos_frame)[j] <- list[i]
+for(i in 1:ncol(c2s_frame)){
+  names(c2s_frame)[i] <- list[i]
 }
-
-save(usos_frame,file="usos_frame.RData")
+save(c2s_frame,file="C2s_frame.RData")
 
 
 
